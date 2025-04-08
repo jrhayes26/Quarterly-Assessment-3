@@ -6,14 +6,17 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    subjects = ['Intro to Project Management', 
-                'Database Management',
-                'Supply Chain Management', 
-                'Data Driven Decision Making',
-                'Business Applications Devlopment']
+    subjects = [
+        'Intro to Project Management',
+        'Database Management',
+        'Business Applications Development',
+        'Supply Chain Management',
+        'Data Driven Decision Making'
+    ]
+
     for subject in subjects:
         cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS {subject} (
+            CREATE TABLE IF NOT EXISTS "{subject}" (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 question TEXT NOT NULL,
                 option_a TEXT NOT NULL,

@@ -17,7 +17,7 @@ class LoginScreen:
 
     def admin_login(self):
         password = simpledialog.askstring("Admin Login", "Enter admin password:", show='*')
-        if password == "admin123":  # Replace with secure auth later
+        if password == "admin123":
             self.master.destroy()
             open_admin_gui()
         else:

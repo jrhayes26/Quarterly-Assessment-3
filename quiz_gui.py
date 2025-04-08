@@ -3,26 +3,31 @@ from tkinter import messagebox
 import sqlite3
 from database import DB_NAME
 
+subjects = [
+    'Intro to Project Management',
+    'Database Management',
+    'Business Applications Development',
+    'Supply Chain Management',
+    'Data Driven Decision Making'
+]
+
 def open_quiz_gui():
     quiz_win = tk.Tk()
     quiz_win.title("Choose a Subject")
     quiz_win.geometry("300x250")
 
     tk.Label(quiz_win, text="Select a Quiz Subject:", font=("Arial", 12)).pack(pady=15)
-
-    subjects = ['Math', 'History', 'Science', 'Literature', 'Business']
     for subject in subjects:
-        tk.Button(quiz_win, text=subject, width=20,
+        tk.Button(quiz_win, text=subject, width=30,
                   command=lambda s=subject: start_quiz(s, quiz_win)).pack(pady=5)
 
     quiz_win.mainloop()
-
 
 def start_quiz(subject, prev_win):
     prev_win.destroy()
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM {subject}")
+    cursor.execute(f"SELECT * FROM \"{subject}\"")
     questions = cursor.fetchall()
     conn.close()
 
@@ -43,7 +48,6 @@ def start_quiz(subject, prev_win):
 
     selected = tk.StringVar()
     option_buttons = []
-
     for _ in range(4):
         btn = tk.Radiobutton(quiz_win, text="", variable=selected, value="", font=("Arial", 10), anchor="w")
         btn.pack(fill="x", padx=40, pady=2)
