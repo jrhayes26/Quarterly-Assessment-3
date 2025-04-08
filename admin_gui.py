@@ -1,66 +1,98 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 import sqlite3
+from database import DB_NAME
 
-# --- Constants for Database ---
-DB_NAME = "quizbowl.db"
+def open_admin_gui():
+    admin_win = tk.Tk()
+    admin_win.title("Admin Panel")
+    admin_win.geometry("300x200")
 
-# --- Fixed list of subjects (matches database table names) ---
-SUBJECTS = [
-    "Database_Management",
-    "Intro_to_Project_Management",
-    "Data_Driven_Decision_Making",
-    "Supply_Chain_Management",
-    "Business_Application_Development"
-]
+    tk.Label(admin_win, text="Admin Dashboard", font=("Arial", 14)).pack(pady=10)
 
-# --- Function to view questions in a subject ---
-def view_questions_gui():
-    view_window = tk.Toplevel()
-    view_window.title("View Questions")
+    tk.Button(admin_win, text="Add Question", command=add_question_gui).pack(pady=5)
+    tk.Button(admin_win, text="View Questions", command=view_questions_gui).pack(pady=5)
+    tk.Button(admin_win, text="Exit", command=admin_win.destroy).pack(pady=10)
 
-    label = tk.Label(view_window, text="Select Subject:")
-    label.pack(pady=5)
+    admin_win.mainloop()
 
-    subject_var = tk.StringVar()
-    subject_dropdown = ttk.Combobox(view_window, textvariable=subject_var, values=SUBJECTS)
-    subject_dropdown.pack(pady=5)
 
-    def load_questions():
+# ---------- ADD QUESTION GUI ----------
+def add_question_gui():
+    add_win = tk.Toplevel()
+    add_win.title("Add New Question")
+    add_win.geometry("400x500")
+
+    tk.Label(add_win, text="Select Subject:").pack()
+    subject_var = tk.StringVar(add_win)
+    subject_var.set("Math")
+    subjects = ['Math', 'History', 'Science', 'Literature', 'Business']
+    tk.OptionMenu(add_win, subject_var, *subjects).pack()
+
+    entries = {}
+    fields = ["Question", "Option A", "Option B", "Option C", "Option D", "Correct Answer"]
+    for field in fields:
+        tk.Label(add_win, text=field + ":").pack()
+        entry = tk.Entry(add_win, width=50)
+        entry.pack()
+        entries[field] = entry
+
+    def save_question():
         subject = subject_var.get()
-        if not subject:
-            messagebox.showerror("Error", "Please select a subject.")
+        data = {f: entries[f].get().strip() for f in fields}
+        if "" in data.values():
+            messagebox.showwarning("Incomplete", "Please fill in all fields.")
+            return
+
+        if data["Correct Answer"] not in [data["Option A"], data["Option B"], data["Option C"], data["Option D"]]:
+            messagebox.showerror("Invalid", "Correct answer must match one of the options.")
             return
 
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-        cursor.execute(f"SELECT question, option1, option2, option3, option4, correct FROM {subject}")
+        cursor.execute(f'''
+            INSERT INTO {subject} (question, option_a, option_b, option_c, option_d, correct_answer)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (data["Question"], data["Option A"], data["Option B"], data["Option C"], data["Option D"], data["Correct Answer"]))
+        conn.commit()
+        conn.close()
+
+        messagebox.showinfo("Success", "Question added successfully.")
+        add_win.destroy()
+
+    tk.Button(add_win, text="Submit", command=save_question).pack(pady=20)
+
+
+# ---------- VIEW QUESTIONS GUI ----------
+def view_questions_gui():
+    view_win = tk.Toplevel()
+    view_win.title("View Questions")
+    view_win.geometry("600x400")
+
+    tk.Label(view_win, text="Select Subject to View:").pack()
+    subject_var = tk.StringVar(view_win)
+    subject_var.set("Math")
+    subjects = ['Math', 'History', 'Science', 'Literature', 'Business']
+    tk.OptionMenu(view_win, subject_var, *subjects).pack()
+
+    text_area = tk.Text(view_win, wrap="word", height=15, width=70)
+    text_area.pack(pady=10)
+
+    def load_questions():
+        subject = subject_var.get()
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM {subject}")
         rows = cursor.fetchall()
         conn.close()
 
-        result_text.delete(1.0, tk.END)
-        for idx, row in enumerate(rows, 1):
-            q, o1, o2, o3, o4, correct = row
-            result_text.insert(tk.END, f"Q{idx}: {q}\nA. {o1}\nB. {o2}\nC. {o3}\nD. {o4}\nCorrect: {correct}\n\n")
+        text_area.delete("1.0", tk.END)
+        for row in rows:
+            question_id = row[0]
+            question = row[1]
+            options = row[2:6]
+            correct = row[6]
+            text_area.insert(tk.END, f"ID: {question_id}\nQ: {question}\nOptions: {options}\nAnswer: {correct}\n\n")
 
-    load_btn = tk.Button(view_window, text="Load Questions", command=load_questions)
-    load_btn.pack(pady=5)
+    tk.Button(view_win, text="Load Questions", command=load_questions).pack()
 
-    result_text = tk.Text(view_window, height=20, width=80)
-    result_text.pack(pady=10)
-
-# --- Main Admin GUI Window ---
-def open_admin_gui():
-    admin_window = tk.Toplevel()
-    admin_window.title("Admin Panel")
-
-    label = tk.Label(admin_window, text="Welcome to the Admin Panel", font=("Arial", 14))
-    label.pack(pady=10)
-
-    # Only "View Questions" is available to admin
-    view_btn = tk.Button(admin_window, text="View Questions", width=20, command=view_questions_gui)
-    view_btn.pack(pady=10)
-
-    # You can add more admin features here if needed in future
-
-# --- END OF FILE ---

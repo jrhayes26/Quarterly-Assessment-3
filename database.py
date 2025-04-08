@@ -6,7 +6,11 @@ def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    subjects = ['Math', 'History', 'Science', 'Literature', 'Business']
+    subjects = ['Intro to Project Management', 
+                'Database Management',
+                'Supply Chain Management', 
+                'Data Driven Decision Making',
+                'Business Applications Devlopment']
     for subject in subjects:
         cursor.execute(f'''
             CREATE TABLE IF NOT EXISTS {subject} (
