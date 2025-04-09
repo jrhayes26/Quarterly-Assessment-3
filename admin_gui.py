@@ -77,6 +77,28 @@ def view_questions_gui():
 
     text_area = tk.Text(view_win, wrap="word", height=15, width=70)
     text_area.pack(pady=10)
+    
+    tk.Label(view_win, text="Enter ID to Delete:").pack()
+    delete_entry = tk.Entry(view_win)
+    delete_entry.pack()
+
+    def delete_question():
+        subject = subject_var.get()
+        qid = delete_entry.get().strip()
+        if not qid.isdigit():
+            messagebox.showerror("Invalid", "Please enter a valid numeric ID.")
+            return
+
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute(f"DELETE FROM {subject} WHERE id = ?", (int(qid),))
+        conn.commit()
+        conn.close()
+        messagebox.showinfo("Deleted", f"Question ID {qid} deleted.")
+        load_questions()  # Refresh list
+
+    tk.Button(view_win, text="Delete Question", command=delete_question).pack(pady=5)
+
 
     def load_questions():
         subject = subject_var.get()
