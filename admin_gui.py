@@ -77,7 +77,7 @@ def view_questions_gui():
 
     text_area = tk.Text(view_win, wrap="word", height=15, width=70)
     text_area.pack(pady=10)
-    
+
     tk.Label(view_win, text="Enter ID to Delete:").pack()
     delete_entry = tk.Entry(view_win)
     delete_entry.pack()
@@ -91,7 +91,7 @@ def view_questions_gui():
 
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-        cursor.execute(f"DELETE FROM {subject} WHERE id = ?", (int(qid),))
+        cursor.execute(f'DELETE FROM "{subject}" WHERE id = ?', (int(qid),))
         conn.commit()
         conn.close()
         messagebox.showinfo("Deleted", f"Question ID {qid} deleted.")
