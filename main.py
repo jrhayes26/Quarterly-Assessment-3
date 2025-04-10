@@ -4,31 +4,52 @@ from database import init_db
 from admin_gui import open_admin_gui
 from quiz_gui import open_quiz_gui
 
-class LoginScreen:
-    def __init__(self, master):
-        self.master = master
-        master.title("Quiz Bowl Login")
-        master.geometry("300x200")
+# Color palette & fonts to match the Admin Panel
+COLORS = {
+    "bg": "#e9dce5",
+    "highlight": "#8c77af",
+    "button": "#f6e7b4",
+    "entry_bg": "#ffffff",
+    "text": "#4a4a4a"
+}
 
-        tk.Label(master, text="Welcome! Choose an option:").pack(pady=20)
+FONT = ("Segoe UI", 11)
+TITLE_FONT = ("Segoe UI", 14, "bold")
 
-        tk.Button(master, text="Admin Login", width=20, command=self.admin_login).pack(pady=5)
-        tk.Button(master, text="Take Quiz", width=20, command=self.start_quiz).pack(pady=5)
+def open_login_screen():
+    root = tk.Tk()
+    root.title("Quiz Bowl Login")
+    root.geometry("320x250")
+    root.configure(bg=COLORS["bg"])
 
-    def admin_login(self):
+    # Title
+    tk.Label(root, text="Welcome to Quiz Bowl!", font=TITLE_FONT,
+             bg=COLORS["bg"], fg=COLORS["highlight"]).pack(pady=(20, 10))
+
+    # Buttons
+    def admin_login():
         password = simpledialog.askstring("Admin Login", "Enter admin password:", show='*')
         if password == "admin123":
-            self.master.destroy()
+            root.destroy()
             open_admin_gui()
         else:
             messagebox.showerror("Access Denied", "Incorrect password.")
 
-    def start_quiz(self):
-        self.master.destroy()
+    def start_quiz():
+        root.destroy()
         open_quiz_gui()
+
+    for label, action in [
+        ("Admin Login", admin_login),
+        ("Take Quiz", start_quiz),
+        ("Exit", root.destroy)
+    ]:
+        tk.Button(root, text=label, font=FONT, bg=COLORS["button"], fg=COLORS["text"],
+                  relief="flat", activebackground=COLORS["highlight"], command=action).pack(pady=8, ipadx=10)
+
+    root.mainloop()
+
 
 if __name__ == "__main__":
     init_db()
-    root = tk.Tk()
-    LoginScreen(root)
-    root.mainloop()
+    open_login_screen()
